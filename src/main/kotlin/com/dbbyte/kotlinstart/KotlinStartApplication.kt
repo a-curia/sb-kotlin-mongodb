@@ -1,5 +1,6 @@
 package com.dbbyte.kotlinstart
 
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -7,6 +8,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.data.mongodb.repository.Query
+import org.springframework.web.bind.annotation.*
 import java.util.stream.Stream
 
 @SpringBootApplication
@@ -42,3 +44,30 @@ interface PersonRepository: MongoRepository<Person, String> {
 
 
 // sample data implementing command line runner
+
+
+// create the greeting controller
+@RestController
+class GreetingController {
+
+    @GetMapping("/greeting")
+    fun greeting(@RequestParam(value = "name", defaultValue = "World") name: String) =
+            Person("Hello, $name"," - TEST")
+
+}
+
+@RequestMapping("/mongodata")
+@RestController
+class DatabaseController @Autowired constructor(private val personRepository: PersonRepository) {
+
+
+    @RequestMapping(method = arrayOf(RequestMethod.GET))
+    fun getAllPersons(): List<Person> {
+        return personRepository.findAll()
+    }
+    @RequestMapping(value = "{id}", method = arrayOf(RequestMethod.GET))
+    fun getCustomerById(@PathVariable("id") id: Long): Person {
+        return personRepository.findOne("{id: $id}")
+    }
+
+}
